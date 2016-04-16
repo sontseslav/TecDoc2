@@ -823,8 +823,7 @@ public class ExportHelper1 {
   ##############################################################*/
 
     private void exportTableDataPrepSt(ResultSet rsTransbase, 
-            ResultSet rsMySql,
-            int colNumb, String table)throws SQLException{
+            ResultSet rsMySql, int colNumb, String table)throws SQLException{
         rsTransbase.setFetchSize(5000);//?
         boolean isRowsInSet = rsTransbase.last();
         if(!isRowsInSet) throw new SQLException("Empty set");

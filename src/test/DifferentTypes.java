@@ -16,7 +16,7 @@ public class DifferentTypes {
         container.add("String");
         container.add((byte)105);//Byte
         container.add(320000);//int
-        container.add(32000000000000L);//long
+        container.add((long)32000000);//long
         container.add((float)3.14);//float
         
         for(Object obj : container){
