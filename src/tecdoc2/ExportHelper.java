@@ -27,7 +27,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
-public class ExportHelper1 {
+public class ExportHelper {
     
     private static final String DB_DRIVER = "transbase.jdbc.Driver";
     private static final String DB_URL = "jdbc:transbase://127.0.0.1/";
@@ -39,7 +39,7 @@ public class ExportHelper1 {
     private static final int UKRAINE_CODE = 210;
     private static final int RUSSIAN_ID = 16;
     
-    public ExportHelper1(Connection conn) {
+    public ExportHelper(Connection conn) {
         try {
             mysqlConnection = conn;
             Class.forName(DB_DRIVER);

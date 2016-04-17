@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tecdoc2;
 
     /**
@@ -16,15 +11,19 @@ package tecdoc2;
     public class TecdocExport {
      
         public static void main(String[] args) {
-            ExportHelper1 helper = new ExportHelper1(new MysqlHelper().getConnection());
+            //ExportHelper helper = new ExportHelper(new MysqlHelper().getConnection());
+            TecDocPreparator tdPrep = new TecDocPreparator(
+                    new MysqlHelper().getConnection());
             //helper.printSysTable();
+            //tdPrep.printSysTable();
             
             // Cars
             //helper.exportManufacturersUA();//done
-            //helper.exportManufacturersOther();//done
-            //helper.exportModelsUA();//done
+            //tdPrep.exportManufacturersUA();
+            //tdPrep.exportManufacturersOther();//done
+            //tdPrep.exportModelsUA();//done
             //helper.exportModelsOther(); //errors?
-            //helper.exportTypesUA();//done
+            //tdPrep.exportTypesUA();//done
             //helper.exportTypesBody();
             //helper.exportTypesEngine();
             //helper.exportTypesFuel();
@@ -33,19 +32,20 @@ package tecdoc2;
             //helper.exportEngines();
             
             // Articles
-            //helper.exportArticlesUA(); //40min execution - done!
-            //helper.exportSuppliersUA();//done
-            //helper.exportArticlesLookupUA(); //Long time to perform - later!
+            //tdPrep.exportArticlesUA(); //40min execution - done!
+            //tdPrep.exportSuppliersUA();//done
+            tdPrep.exportArticlesLookupUA(); //Long time to perform - later!
             //helper.exportLinkTypeArticle();
             //helper.exportArticlesLink();
             //helper.exportGenericArticles();
             //helper.exportLinkGenericArticleSearchTree(); //dublicate
             //helper.exportArticlesAttributes();
-            //helper.exportSearchTree();//done
-            //helper.exportLinkGenericArticleSearchTree();//done
+            tdPrep.exportSearchTree();//done
+            tdPrep.exportLinkGenericArticleSearchTree();//done
             //helper.exportCriteriaArticle();    
             //helper.exportPictures();
-            helper.closeConnection();
+            //helper.closeConnection();
+            tdPrep.closeConnection();
         }
      
     }
