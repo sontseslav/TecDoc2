@@ -61,7 +61,7 @@ public class ParallelDBProcessor {
                                 if (rsTransbase.getObject(i) == null) {
                                     list.add(-99);
                                 } else {
-                                    list.add(rsTransbase.getInt(i));
+                                    list.add((int)rsTransbase.getInt(i));
                                 }
                                 break;
                             case "TINYINT":
@@ -125,13 +125,16 @@ public class ParallelDBProcessor {
         
         @Override
         public void run(){
-            //if (!isNext && queue.isEmpty())return;//no elements in the queue and filler is about to exit
             try(PreparedStatement ps = connMySQL.prepareStatement(sqlInsert)){
                 int batchElements = 1;
-                while(!queue.isEmpty()){
-                    List<Object> list = queue.take().getContainer();
-                    int i = 1;
-                    for (Object element : list){
+                while(!queue.isEmpty() && isNext){//even if I enpty NOW I'll be full in the future.
+                    List<Object> list = queue.poll(10,TimeUnit.SECONDS).getContainer();
+                    if(list == null){//10 srconds passed and no data available
+                        System.out.println(Thread.currentThread().getName()+" giving up...");
+                        break;
+                    }
+                    int i = 1; //column count
+                    for (Object element : list){//process row
                         switch(element.getClass().getSimpleName()){
                             case "Integer":
                                 if ((int)element == -99) {
@@ -177,6 +180,7 @@ public class ParallelDBProcessor {
                     if(batchElements % 1000 == 0 || queue.isEmpty()){
                         ps.executeBatch();
                     }
+                    batchElements++;
                     int counter;
                     boolean updated;
                     do {
@@ -185,7 +189,7 @@ public class ParallelDBProcessor {
                     } while (!updated);
                     if (counter % 10000 == 0) {
                         System.out.println(counter + " : " + (counter * 100 / rowCount) + "%");
-                        mysqlConnection.commit();
+                        //mysqlConnection.commit();
                     }
                 }
             }catch(SQLException | InterruptedException e){e.printStackTrace();}
@@ -204,7 +208,6 @@ public class ParallelDBProcessor {
     private String sqlInsert;
     private int rowCount;
     private boolean isNext = true;
-    //private volatile boolean isTerminated = false;
     
     public ParallelDBProcessor(Connection mysqlConnection, ResultSet rsTransbase, 
             ResultSet rsMySql, int colNumb, String table){
@@ -217,8 +220,8 @@ public class ParallelDBProcessor {
     
     public void exec()throws SQLException{//if only finally block fails
        try{
-           mysqlConnection.setAutoCommit(false);
-           sqlInsert = prepareInsertQerry();
+           //mysqlConnection.setAutoCommit(false);//care about data consistency costs performance
+           sqlInsert = prepareInsertQuery();
            ResultSetMetaData rsmdMySql = rsMySql.getMetaData();
            Thread filler = new Thread(new TaskFillQueue(rsTransbase, rsmdMySql, 
                    colNumb, queue));
@@ -230,25 +233,25 @@ public class ParallelDBProcessor {
                threadPoolExecutor.execute(new TaskProcessQueue(queue, sqlInsert, 
                        mysqlConnection));
            }
-           while(isNext){
+           while(isNext){//is queue is empty and Filler done it job?
                try{
                    Thread.sleep(500);
                    //System.out.println("waiting...");
                }catch(InterruptedException e){e.printStackTrace();}
            }
-           try{Thread.sleep(500);}catch(InterruptedException e){}
-           threadPoolExecutor.shutdownNow();
+           //try{Thread.sleep(500);}catch(InterruptedException e){}//waiting for a shure...
+           threadPoolExecutor.shutdown(); //exit is sefe even if some threads are waiting in a queue, they definitely gave up
            System.out.println("Table "+table+" completed");
        }catch(SQLException e){
-           mysqlConnection.rollback();
+           //mysqlConnection.rollback();
            e.printStackTrace();
        }finally{
-           mysqlConnection.commit();
-           mysqlConnection.setAutoCommit(true);
+           //mysqlConnection.commit();
+           //mysqlConnection.setAutoCommit(true);
        }
     }
     
-    private String prepareInsertQerry() throws SQLException{
+    private String prepareInsertQuery() throws SQLException{
         rsTransbase.setFetchSize(5000);//?
         boolean isRowsInSet = rsTransbase.last();
         if(!isRowsInSet) throw new SQLException("Empty set");

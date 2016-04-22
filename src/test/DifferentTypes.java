@@ -13,7 +13,7 @@ import java.util.List;
 public class DifferentTypes {
     public static void main(String[] args) {
         List<Object> container = new ArrayList<>();
-        //container.add(null);
+        //container.add(null); //java.lang.NullPointerException
         container.add("String");
         container.add((byte)105);//Byte
         container.add(320000);//int
