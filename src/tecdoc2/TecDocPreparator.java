@@ -416,7 +416,7 @@ public class TecDocPreparator {
         
     public void exportArticlesLookupUA() {
         final String tableName = "TOF_ART_LOOKUP";
-        final String mysqlTable = "tof_articles_lookup_new_ua";
+        final String mysqlTable = "tof_articles_lookup_new_ua2";
         
         final String sqlDropTable = "DROP TABLE IF EXISTS " + mysqlTable;
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (" +

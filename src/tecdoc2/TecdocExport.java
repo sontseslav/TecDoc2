@@ -18,7 +18,7 @@ package tecdoc2;
             //tdPrep.printSysTable();
             
             // Cars
-            //helper.exportManufacturersUA();//done
+            //tdPrep.exportManufacturersUA();//done
             //tdPrep.exportManufacturersUA();
             //tdPrep.exportManufacturersOther();//done
             //tdPrep.exportModelsUA();//done
@@ -32,16 +32,16 @@ package tecdoc2;
             //helper.exportEngines();
             
             // Articles
-            //tdPrep.exportArticlesUA(); //40min execution - done!
-            //tdPrep.exportSuppliersUA();//done
-            tdPrep.exportArticlesLookupUA(); //Long time to perform - later!
+            tdPrep.exportArticlesUA(); //40min execution - done!
+            tdPrep.exportSuppliersUA();//done
+            //tdPrep.exportArticlesLookupUA(); //Long time to perform - later!
             //helper.exportLinkTypeArticle();
             //helper.exportArticlesLink();
             //helper.exportGenericArticles();
             //helper.exportLinkGenericArticleSearchTree(); //dublicate
             //helper.exportArticlesAttributes();
-            tdPrep.exportSearchTree();//done
-            tdPrep.exportLinkGenericArticleSearchTree();//done
+            //tdPrep.exportSearchTree();//done
+            //tdPrep.exportLinkGenericArticleSearchTree();//done
             //helper.exportCriteriaArticle();    
             //helper.exportPictures();
             //helper.closeConnection();

@@ -185,7 +185,7 @@ public class ParallelDBProcessor {
                     } while (!updated);
                     if (counter % 10000 == 0) {
                         System.out.println(counter + " : " + (counter * 100 / rowCount) + "%");
-                        mysqlConnection.commit();
+                        //mysqlConnection.commit();
                     }
                 }
             }catch(SQLException | InterruptedException e){e.printStackTrace();}
@@ -217,7 +217,7 @@ public class ParallelDBProcessor {
     
     public void exec()throws SQLException{//if only finally block fails
        try{
-           mysqlConnection.setAutoCommit(false);
+           //mysqlConnection.setAutoCommit(false);
            sqlInsert = prepareInsertQerry();
            ResultSetMetaData rsmdMySql = rsMySql.getMetaData();
            Thread filler = new Thread(new TaskFillQueue(rsTransbase, rsmdMySql, 
@@ -240,11 +240,11 @@ public class ParallelDBProcessor {
            threadPoolExecutor.shutdownNow();
            System.out.println("Table "+table+" completed");
        }catch(SQLException e){
-           mysqlConnection.rollback();
+           //mysqlConnection.rollback();
            e.printStackTrace();
        }finally{
-           mysqlConnection.commit();
-           mysqlConnection.setAutoCommit(true);
+           //mysqlConnection.commit();
+           //mysqlConnection.setAutoCommit(true);
        }
     }
     
