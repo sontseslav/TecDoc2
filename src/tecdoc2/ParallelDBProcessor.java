@@ -186,10 +186,11 @@ public class ParallelDBProcessor {
                     } while (!updated);
                     if (counter % 10000 == 0) {
                         System.out.println(counter + " : " + (counter * 100 / rowCount) + "%");
-                        //mysqlConnection.commit();
                     }
+                    if (counter % 100000 == 0){mysqlConnection.commit();}
                 }
             }catch(SQLException | InterruptedException e){
+                e.printStackTrace();
                 System.out.println(Thread.currentThread().getName()+" giving up...");
             }
         }
