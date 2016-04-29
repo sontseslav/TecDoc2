@@ -185,7 +185,8 @@ public class ParallelDBProcessor {
                         updated = rowsSet.compareAndSet(counter, ++counter);
                     } while (!updated);
                     if (counter % 10000 == 0) {
-                        System.out.println(counter + " : " + (counter * 100 / rowCount) + "%");
+                        System.out.println(Thread.currentThread().getName()+" : "
+                                +counter + " : " + (counter/rowCount*100) + "%");
                     }
                     if (counter % 100000 == 0){mysqlConnection.commit();}
                 }
@@ -200,7 +201,7 @@ public class ParallelDBProcessor {
     private final ResultSet rsTransbase, rsMySql;
     private final int colNumb;
     private final String table;
-    private final BlockingQueue<Container> queue = new ArrayBlockingQueue<>(10000);
+    private final BlockingQueue<Container> queue = new ArrayBlockingQueue<>(200000);
     private final AtomicInteger rowsSet = new AtomicInteger(0);
     private final int corePoolSize = 5;
     private final int maxPoolSize = 10;
