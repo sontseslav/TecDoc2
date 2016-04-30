@@ -15,6 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * may be Runnable
@@ -178,7 +179,7 @@ public class ParallelDBProcessor {
                         ps.executeBatch();
                     }
                     batchElements++;
-                    int counter;
+                    long counter;
                     boolean updated;
                     do {
                         counter = rowsSet.get();
@@ -202,7 +203,7 @@ public class ParallelDBProcessor {
     private final int colNumb;
     private final String table;
     private final BlockingQueue<Container> queue = new ArrayBlockingQueue<>(200000);
-    private final AtomicInteger rowsSet = new AtomicInteger(0);
+    private final AtomicLong rowsSet = new AtomicLong(0);
     private final int corePoolSize = 5;
     private final int maxPoolSize = 10;
     private final int keepAliveTime = 5000;
