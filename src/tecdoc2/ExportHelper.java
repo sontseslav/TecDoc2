@@ -145,7 +145,7 @@ public class ExportHelper {
                 " WHERE MFA_ID NOT IN "
                 + "("
                 + "SELECT MFA_ID FROM "+tableName+" WHERE "
-                + "MFA_PC_CTM SUBRANGE (210 CAST INTEGER) = 1" 
+                + "MFA_PC_CTM SUBRANGE (210 CAST INTEGER) = 1"  /*what the f*ck???*/
                 + " OR MFA_CV_CTM SUBRANGE (210 CAST INTEGER) = 1"
                 + ")";
 
@@ -838,9 +838,9 @@ public class ExportHelper {
         sb.deleteCharAt(sb.length()-1);
         sb.append(")");
         String sql = sb.toString();
-        mysqlConnection.setAutoCommit(false);
+        //mysqlConnection.setAutoCommit(false);
         try(PreparedStatement ps = mysqlConnection.prepareStatement(sql)){
-            int counter = 0;
+            long counter = 0;
             while(rsTransbase.next()){
                 for(int i = 1; i <= colNumb; i++){
                     switch(rsmdMySql.getColumnTypeName(i)){
@@ -882,22 +882,27 @@ public class ExportHelper {
                         default:
                             throw new SQLException("Unknown type in switch");
                     }
-                    //ps.addBatch();
+                    
                 }
-                ps.executeUpdate();
+                ps.addBatch();
+                if(counter != 0 && (counter % 1000) == 0){
+                    ps.executeBatch();
+                }
                 if(counter != 0 && (counter % 5000) == 0){
                     System.out.println(counter+" : "+(counter*100/rowCount)+"%");
+                    //mysqlConnection.commit();
                 }
                 counter++;
             }
+            ps.executeBatch();
             System.out.println(counter+" : "+(counter*100/rowCount)+"%");
             ps.close();
         }catch(SQLException ex){
-            mysqlConnection.rollback();
+            //mysqlConnection.rollback();
             ex.printStackTrace();
         }finally{
-            mysqlConnection.commit();
-            mysqlConnection.setAutoCommit(true);
+            //mysqlConnection.commit();
+            //mysqlConnection.setAutoCommit(true);
             System.out.println("Table "+table+" completed");
         }
     }

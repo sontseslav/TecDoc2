@@ -118,16 +118,17 @@ public class ParallelDBProcessor {
         private final String sqlInsert;
         private final Connection connMySQL;
         
-        public TaskProcessQueue(BlockingQueue<Container> queue,String sqlInsert,
-                Connection connMySQL){
+        public TaskProcessQueue(BlockingQueue<Container> queue,String sqlInsert/*,
+                Connection connMySQL*/){
             this.queue = queue;
             this.sqlInsert = sqlInsert;
-            this.connMySQL = connMySQL;
+            this.connMySQL = new MysqlHelper().getConnection();
         }
         
         @Override
         public void run(){
-            try(PreparedStatement ps = connMySQL.prepareStatement(sqlInsert)){
+            try(PreparedStatement ps = this.connMySQL.prepareStatement(sqlInsert);){
+                this.connMySQL.setAutoCommit(false);
                 int batchElements = 1;
                 while(!queue.isEmpty()){//even if I enpty NOW I'll be full in the future.
                     List<Object> list = queue.take().getContainer();
@@ -187,13 +188,18 @@ public class ParallelDBProcessor {
                     } while (!updated);
                     if (counter % 10000 == 0) {
                         System.out.println(Thread.currentThread().getName()+" : "
-                                +counter + " : " + (counter/rowCount*100) + "%");
+                                +counter + " : " + (counter*100/rowCount) + "%");
                     }
-                    if (counter % 100000 == 0){mysqlConnection.commit();}
+                    if (counter % 100000 == 0){this.connMySQL.commit();}
                 }
             }catch(SQLException | InterruptedException e){
                 e.printStackTrace();
                 System.out.println(Thread.currentThread().getName()+" giving up...");
+            }finally{
+                try{
+                    this.connMySQL.commit();
+                    this.connMySQL.close();
+                }catch(SQLException e){e.printStackTrace();}
             }
         }
     }
@@ -202,7 +208,7 @@ public class ParallelDBProcessor {
     private final ResultSet rsTransbase, rsMySql;
     private final int colNumb;
     private final String table;
-    private final BlockingQueue<Container> queue = new ArrayBlockingQueue<>(200000);
+    private final BlockingQueue<Container> queue = new ArrayBlockingQueue<>(100000);
     private final AtomicLong rowsSet = new AtomicLong(0);
     private final int corePoolSize = 5;
     private final int maxPoolSize = 10;
@@ -222,7 +228,7 @@ public class ParallelDBProcessor {
     
     public void exec()throws SQLException{//if only finally block fails
        try{
-           mysqlConnection.setAutoCommit(false);//care about data consistency costs performance
+           //mysqlConnection.setAutoCommit(false);//care about data consistency costs performance
            sqlInsert = prepareInsertQuery();
            ResultSetMetaData rsmdMySql = rsMySql.getMetaData();
            List<Future> futureProcList = new ArrayList<>();
@@ -233,8 +239,8 @@ public class ParallelDBProcessor {
            ExecutorService threadPoolExecutor = new ThreadPoolExecutor(corePoolSize,
            maxPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
            for(int i = 0; i < maxPoolSize; i++){
-               futureProcList.add(threadPoolExecutor.submit(new TaskProcessQueue(queue, sqlInsert, 
-                       mysqlConnection)));
+               futureProcList.add(threadPoolExecutor.submit(new TaskProcessQueue(queue, sqlInsert/*, 
+                       mysqlConnection*/)));
            }
            while(isNext){//is queue is empty and Filler done it job?
                try{
@@ -249,11 +255,11 @@ public class ParallelDBProcessor {
            threadPoolExecutor.shutdown(); //exit is safe even if some threads was waiting in a queue, they definitely gave up
            System.out.println("Table "+table+" completed");
        }catch(SQLException e){
-           mysqlConnection.rollback();
+           //mysqlConnection.rollback();
            e.printStackTrace();
        }finally{
-           mysqlConnection.commit();
-           mysqlConnection.setAutoCommit(true);
+           //mysqlConnection.commit();
+           //mysqlConnection.setAutoCommit(true);
        }
     }
     

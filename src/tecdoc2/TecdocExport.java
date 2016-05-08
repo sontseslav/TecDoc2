@@ -34,6 +34,7 @@ package tecdoc2;
             //tdPrep.exportArticlesUA(); //40min execution - done!
             //tdPrep.exportSuppliersUA();//done
             tdPrep.exportArticlesLookupUA(); //Long time to perform - later!
+            //helper.exportArticlesLookupUA();
             //helper.exportLinkTypeArticle();
             //helper.exportArticlesLink();
             //helper.exportGenericArticles();
