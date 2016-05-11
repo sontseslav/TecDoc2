@@ -260,12 +260,12 @@ public class DumpDB {
                     row++;
                     if(row % 15000 == 0){
                         sb.append(";\n");
-                        System.out.printf("%d rows added : %.2f %n",row,(((double)row)/rowCount*100));
                         df.makeWrite(sb.toString());
                         sb = new StringBuilder(insert);
                     }else{
                         sb.append(",");
                     }
+                    if(row % 100000 == 0){System.out.printf("%d rows added : %.2f %n",row,(((double)row)/rowCount*100));}
                 }
                 System.out.printf("%d rows added : %.2f %n",row,(((double)row)/rowCount*100));
                 if(sb.length() == insert.length()){
