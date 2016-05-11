@@ -232,6 +232,7 @@ public class DumpDB {
                                     sb.append("NULL");
                                 } else {
                                     String s = rsTransbase.getString(i).replace("'", "");
+                                    if(s.endsWith("\\")){s = s.substring(0, s.length()-1);}
                                     sb.append("'").append(s).append("'");
                                 }
                                 if(i == columnCount){
