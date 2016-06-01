@@ -1,0 +1,23 @@
+exportManufacturersUA();		|1
+exportManufacturersOther();		|
+exportModelsUA();			|
+exportTypesUA();			|
+exportTypesBody();			|
+exportTypesEngine();			|
+exportTypesFuel();			|
+exportTypesDrive();			|
+exportLinkTypeEngine();			|
+exportEngines();			|
+            
+Articles
+exportArticlesUA();			|
+exportSuppliersUA();			|
+exportArticlesLookupUA();		|1
+exportLinkTypeArticle();		|
+exportArticlesLink();			|
+exportGenericArticles();		|
+exportLinkGenericArticleSearchTree();	|
+exportArticlesAttributes();		|
+exportSearchTree();			|
+exportLinkGenericArticleSearchTree();	|
+exportCriteriaArticle(); 		|

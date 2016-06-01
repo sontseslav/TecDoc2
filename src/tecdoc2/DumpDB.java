@@ -28,6 +28,7 @@ import javax.imageio.ImageWriter;
 /**
  *
  * @author coder007
+ * 
  */
 public class DumpDB {
     private static final String DB_DRIVER = "transbase.jdbc.Driver";
@@ -118,6 +119,50 @@ public class DumpDB {
         
     }
     
+    public void dumpManufacturersOther() {
+
+        final String tableName = "TOF_MANUFACTURERS";
+        final String mysqlTable = "tof_manufacturers_other";
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n" +
+                "id int(11) PRIMARY KEY, \n" +
+                "passenger_car TINYINT, \n" +
+                "commercial_vehicle TINYINT, \n" +
+                "axle TINYINT, \n" +
+                "engine TINYINT, \n" +
+                "engine_type TINYINT, \n" +
+                "code VARCHAR(20), \n" +
+                "brand VARCHAR(100), \n" +
+                "number SMALLINT \n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+        final String sqlIndexes = "\n";
+        final String sqlSetectOthers = "SELECT MFA_ID, MFA_PC_MFC, MFA_CV_MFC," 
+                + " MFA_AXL_MFC, MFA_ENG_MFC, MFA_ENG_TYP, MFA_MFC_CODE, "
+                + "MFA_BRAND, MFA_MF_NR FROM " + tableName +
+                " WHERE MFA_ID NOT IN "
+                + "("
+                + "SELECT MFA_ID FROM "+tableName+" WHERE "
+                + "MFA_PC_CTM SUBRANGE (210 CAST INTEGER) = 1"  /*what the f*ck???*/
+                + " OR MFA_CV_CTM SUBRANGE (210 CAST INTEGER) = 1"
+                + ")";
+
+        System.out.println("Start dumping "+mysqlTable+" table");
+        
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(sqlSetectOthers)){
+                ResultSetMetaData metaResult = result.getMetaData();
+                int numberOfColumns = metaResult.getColumnCount();
+                makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+            } catch (SQLException e){e.printStackTrace();}
+            System.out.println("Time elapsed: "+countTime(time)
+                    +"\n----------------------------");
+        
+    }
+    
+    //##############################################
+    //##############################################
+    //##############################################
     public void closeTransbase(){
         try{
             connTransbase.close();
