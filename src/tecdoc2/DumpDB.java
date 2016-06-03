@@ -296,7 +296,6 @@ public class DumpDB {
         final String tableName = "TOF_SUPPLIERS";
         final String mysqlTable = "tof_suppliers_ua";
 
-        final String sqlDropTable = "DROP TABLE IF EXISTS " + mysqlTable;
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
                 + "id int(11), \n"
                 + "brand VARCHAR(100), \n"
@@ -629,7 +628,7 @@ public void dumpSearchTree() {
     }
         
     public void dumpLinkTypeEngine() {
-        final String tableName = "tof_link_typ_eng";
+        final String tableName = "tof_link_typ_eng";//???
         final String mysqlTable = "tof_link_type_engine";
 
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
@@ -973,6 +972,7 @@ public void dumpSearchTree() {
                                 }
                                 break;
                             case "FLOAT":
+                            case "NUMERIC":
                                 if (rsTransbase.getObject(i) == null) {
                                     sb.append("NULL");
                                 } else {

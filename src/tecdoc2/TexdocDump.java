@@ -13,9 +13,6 @@ public class TexdocDump {
     public static void main(String[] args) {
         DumpDB ddb = new DumpDB();
         
-
-
-        
         // Cars
         //ddb.dumpManufacturersUA();//done
         //ddb.dumpManufacturersOther();//done
