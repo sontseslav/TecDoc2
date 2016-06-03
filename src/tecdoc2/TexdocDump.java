@@ -12,9 +12,44 @@ package tecdoc2;
 public class TexdocDump {
     public static void main(String[] args) {
         DumpDB ddb = new DumpDB();
-        //ddb.dumpManufacturersUA();
-        //ddb.dumpArticlesLookupUA();
-        ddb.dumpManufacturersOther();
+        
+
+
+        
+        // Cars
+        //ddb.dumpManufacturersUA();//done
+        //ddb.dumpManufacturersOther();//done
+        ddb.dumpModelsUA();//done
+        ddb.dumpTypesUA();//done
+        
+        //-----TO DO------
+        
+        ddb.dumpTypesBody();
+        ddb.dumpTypesEngine();
+        ddb.dumpTypesFuel();
+        ddb.dumpTypesDrive();
+        ddb.dumpLinkTypeEngine();
+        ddb.dumpEngines();
+            
+        // Articles
+        ddb.dumpArticlesUA();//done
+        ddb.dumpSuppliersUA();//done
+        ddb.dumpSearchTree();//done
+        ddb.dumpLinkGenericArticleSearchTree();//done
+        ddb.dumpCriteria();//done - compare with dumpCriteriaArticle()!
+        //ddb.dumpArticlesLookupUA();//done
+        
+        //-----TO DO------
+        
+        ddb.dumpLinkTypeArticle();
+        ddb.dumpArticlesLink();
+        ddb.dumpGenericArticles();
+        ddb.dumpArticlesAttributes();//done
+        //check select statement precisely!
+        ddb.dumpCriteriaArticle();    
+       
+        //ddb.exportPictures();
+        
         ddb.closeTransbase();
     }
 }

@@ -160,6 +160,692 @@ public class DumpDB {
         
     }
     
+    public void dumpModelsUA() {
+
+        final String tableName = "TOF_MODELS";
+        final String tableCountry = "TOF_COUNTRY_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_models_ua";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id INT(11) PRIMARY KEY, \n"
+                + "manufacturer_id int(11), \n"
+                + "description_id int(11), \n"
+                + "start_date int(6), \n"
+                + "end_date int(6), \n"
+                + "passenger_car TINYINT, \n"
+                + "commercial_vehicle TINYINT, \n"
+                + "axle TINYINT, \n"
+                + "description VARCHAR(255)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (manufacturer_id);\n";
+        
+        final String sqlSelectModels = "SELECT MOD_ID, MOD_MFA_ID, MOD_CDS_ID,"
+                + " MOD_PCON_START, MOD_PCON_END, MOD_PC, MOD_CV, MOD_AXL, TEX_TEXT "
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                + " (MOD_PC_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
+                + " MOD_CV_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
+                + " CDS_LNG_ID = " + RUSSIAN_ID + " AND CDS_TEX_ID = TEX_ID AND MOD_CDS_ID = CDS_ID"
+                + " AND  CDS_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(sqlSelectModels)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+    
+    public void dumpTypesUA() {
+        
+        final String tableName = "TOF_TYPES";
+        final String tableCountry = "TOF_COUNTRY_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_types_ua";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n" +
+                "id int(11) PRIMARY KEY, \n" +
+                "model_id int(11), \n" +
+                "start_date int(6), \n" +
+                "end_date int(6), \n" +
+                "description varchar(100), \n" +
+                "capacity float(5,1), \n" +
+                "capacity_hp_from int(5), \n" +
+                "capacity_kw_from int(5) \n" +
+            ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+        
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (model_id);\n";
+        
+        final String selectTypes = "SELECT TYP_ID, TYP_MOD_ID,  TYP_PCON_START, TYP_PCON_END, TEX_TEXT, TYP_LITRES, TYP_HP_FROM, TYP_KW_FROM" +
+                    " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE" +
+                    " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR" +
+                    " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND" +
+                    " CDS_LNG_ID = " + RUSSIAN_ID + " AND CDS_TEX_ID = TEX_ID AND TYP_CDS_ID = CDS_ID" +
+                    " AND  CDS_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1";
+        
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectTypes)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+    public void dumpArticlesUA() {
+
+        final String tableName = "TOF_ARTICLES";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_articles_new_ua";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11), \n"
+                + "article_nr VARCHAR(80), \n"
+                + "supplier_id int(11), \n"
+                + "description VARCHAR(1024), \n"
+                + "PRIMARY KEY (id) \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (supplier_id);\n" +
+            "ALTER TABLE " + mysqlTable + " ADD INDEX (article_nr);\n";
+
+        final String selectArticles = "SELECT ART_ID, ART_ARTICLE_NR, ART_SUP_ID, TEX_TEXT"
+                    + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " "
+                    + " WHERE ART_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 AND "
+                    + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND "
+                    + " ART_COMPLETE_DES_ID = DES_ID";
+        
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectArticles)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+
+    public void dumpSuppliersUA() {
+
+        final String tableName = "TOF_SUPPLIERS";
+        final String mysqlTable = "tof_suppliers_ua";
+
+        final String sqlDropTable = "DROP TABLE IF EXISTS " + mysqlTable;
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11), \n"
+                + "brand VARCHAR(100), \n"
+                + "alias VARCHAR(100), \n"
+                + "supplier_nr int(11), \n"
+                + "PRIMARY KEY (id) \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (brand);\n" +
+            "ALTER TABLE " + mysqlTable + " ADD INDEX (supplier_nr);\n";
+
+        final String selectSuppliers = "SELECT DISTINCT SUP_ID, SUP_BRAND, SUP_BRAND, SUP_SUPPLIER_NR"
+                    + " FROM " + tableName;
+        
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectSuppliers)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+public void dumpSearchTree() {
+        final String tableName = "TOF_SEARCH_TREE";
+        final String mysqlTable = "tof_search_tree_ua";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n" +
+                "id INT(11), \n" +
+                "parent_id INT(11), \n" +
+                "type SMALLINT(2), \n" +
+                "level SMALLINT(2), \n" +
+                "node_number INT(11), \n" +
+                "sort INT(11), \n" +
+                "text VARCHAR(255), \n" +
+                "PRIMARY KEY (id) \n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (level);\n" +
+                "ALTER TABLE " + mysqlTable + " ADD INDEX (sort);\n" +
+                "ALTER TABLE " + mysqlTable + " ADD INDEX (type);\n" +
+                "ALTER TABLE " + mysqlTable + " ADD INDEX (parent_id);\n";
+        
+        final String selectSearchTree = "SELECT DISTINCT STR_ID, "
+                    + "STR_ID_PARENT, STR_TYPE, STR_LEVEL, STR_SORT, "
+                    + "STR_NODE_NR, TEX_TEXT" 
+                    + " FROM " + tableName + ", " + tableCountry + ", " 
+                    + tableDescriptions + " "
+                    + " WHERE DES_LNG_ID = " + RUSSIAN_ID 
+                    + " AND DES_TEX_ID = TEX_ID AND " 
+                    + " DES_ID=STR_DES_ID";
+        
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectSearchTree)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+    public void dumpLinkGenericArticleSearchTree() {
+        final String tableName = "TOF_LINK_GA_STR";
+        final String mysqlTable = "tof_link_generic_article_search_tree_ua";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n" +
+                "search_tree_id INT(11), \n" +
+                "generic_article_id INT(11) \n" +
+                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (search_tree_id);\n" +
+                "ALTER TABLE " + mysqlTable + " ADD INDEX (generic_article_id);\n";
+        
+        final String selectLinkGenericArticleSearchTree = "SELECT DISTINCT LGS_STR_ID, LGS_GA_ID" +
+                    " FROM " + tableName;
+        
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectLinkGenericArticleSearchTree)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+/**
+ * Article parameters - not described in main runner - TexdocDump
+ */
+    public void dumpCriteria() {
+
+        final String tableName = "TOF_CRITERIA";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_criteria";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11) PRIMARY KEY,\n"
+                + "description varchar(255),\n"
+                + "unit int(11),\n"
+                + "type varchar(6),\n"
+                + "is_interval int(5),\n"
+                + "successor int(11) \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (id);\n";
+
+        final String selectCriteria = "SELECT CRI_ID, TEX_TEXT, CRI_UNIT_DES_ID, CRI_TYPE, CRI_IS_INTERVAL, CRI_SUCCESSOR"
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND CRI_SHORT_DES_ID = DES_ID";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectCriteria)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+ 
+    public void dumpArticlesAttributes() {
+
+        final String tableName = "TOF_ARTICLE_INFO";
+        final String tableCountry = "TOF_TEXT_MODULES";
+        final String tableDescriptions = "TOF_TEXT_MODULE_TEXTS";
+        final String mysqlTable = "tof_article_info";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "article_id int(11),\n"
+                + "sort int(11),\n"
+                + "description TEXT\n" /*what the FUCK???*/
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (article_id);\n";
+        
+        final String selectArticleAttributes = "SELECT AIN_ART_ID, AIN_SORT, TMT_TEXT"
+                    + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                    + " TMO_LNG_ID = " + RUSSIAN_ID + " AND TMO_TMT_ID = TMT_ID AND AIN_TMO_ID = TMO_ID";
+        
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectArticleAttributes)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+
+    public void dumpTypesBody() {
+        final String tableName = "TOF_TYPES";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_types_body";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11) PRIMARY KEY,\n"
+                + "body varchar(100)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String selectTupesBody = "SELECT TYP_ID, TEX_TEXT "
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
+                + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_BODY_DES_ID = DES_ID";
+
+        final String sqlIndexes = "\n";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectTupesBody)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+            
+    public void dumpTypesEngine() {
+        final String tableName = "TOF_TYPES";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_types_engine";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11) PRIMARY KEY,\n"
+                + "engine varchar(100)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String selectTypesEngine = "SELECT TYP_ID, TEX_TEXT "
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
+                + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_ENGINE_DES_ID = DES_ID";
+
+        final String sqlIndexes = "\n";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectTypesEngine)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+            
+    public void dumpTypesFuel() {
+        final String tableName = "TOF_TYPES";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_types_fuel";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11) PRIMARY KEY,\n"
+                + "fuel varchar(100)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String selectTypesFuel = "SELECT TYP_ID, TEX_TEXT "
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
+                + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_FUEL_DES_ID = DES_ID";
+
+        final String sqlIndexes = "\n";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectTypesFuel)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }     
+
+    public void dumpTypesDrive() {
+        final String tableName = "TOF_TYPES";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_types_drive";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11) PRIMARY KEY,\n"
+                + "drive varchar(100)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String selectTypesDrive = "SELECT TYP_ID, TEX_TEXT "
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
+                + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_DRIVE_DES_ID = DES_ID";
+
+        final String sqlIndexes = "\n";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectTypesDrive)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+    public void dumpLinkTypeEngine() {
+        final String tableName = "tof_link_typ_eng";
+        final String mysqlTable = "tof_link_type_engine";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "type_id int(11), \n"
+                + "engine_id int(11) \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (type_id);\n"
+                + "ALTER TABLE " + mysqlTable + " ADD INDEX (engine_id);\n";
+
+        final String selectLinkTypeEngine = "SELECT DISTINCT lte_typ_id, lte_eng_id "
+                + " FROM " + tableName;
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectLinkTypeEngine)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+                
+    public void dumpEngines() {
+        final String tableName = "TOF_ENGINES";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_engines";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id int(11) PRIMARY KEY,\n"
+                + "eng_code varchar(100) \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String selectEngines = "SELECT ENG_ID, ENG_CODE"
+                + " FROM " + tableName + " WHERE"
+                + " (ENG_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
+                + " ENG_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1)";
+
+        final String sqlIndexes = "\n";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectEngines)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+    public void dumpLinkTypeArticle() {
+        final String tableName = "TOF_LINK_LA_TYP";
+        final String mysqlTable = "tof_link_type_article";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "type_id int(11), \n"
+                + "article_link_id int(11), \n"
+                + "generic_article_id int(11), \n"
+                + "supplier_id int(11) \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n"; //default value  ENGINE=MYISAM
+
+        final String sqlIndexes
+                = "ALTER TABLE " + mysqlTable + " ADD INDEX (type_id);\n"
+                + "ALTER TABLE " + mysqlTable + " ADD INDEX (article_link_id);\n"
+                + "ALTER TABLE " + mysqlTable + " ADD INDEX (generic_article_id);\n";
+
+        final String selectLinkTypeArticle = "SELECT DISTINCT LAT_TYP_ID, LAT_LA_ID, LAT_GA_ID, LAT_SUP_ID"
+                + " FROM " + tableName + " WHERE LAT_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 AND LAT_TYP_ID >= 0";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectLinkTypeArticle)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }       
+
+    public void dumpArticlesLink() {
+        final String tableName = "TOF_LINK_ART";
+        final String mysqlTable = "tof_article_link";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id INT(11), \n"
+                + "article_id INT(11), \n"
+                + "PRIMARY KEY (id)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n"; //default value  ENGINE=MYISAM
+
+        final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (article_id);\n";
+
+        final String selectArticlesLink = "SELECT DISTINCT LA_ID, LA_ART_ID "
+                + " FROM " + tableName;
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectArticlesLink)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+    public void dumpGenericArticles() {
+        final String tableName = "TOF_GENERIC_ARTICLES";
+        final String mysqlTable = "tof_generic_articles";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "id INT(11), \n"
+                + "description VARCHAR(255), \n"
+                + "PRIMARY KEY (id)\n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes = "\n";
+
+        final String selectGenericArticles = "SELECT DISTINCT GA_ID, TEX_TEXT"
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " "
+                + " WHERE DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND "
+                + " DES_ID=GA_DES_ID";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectGenericArticles)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+        
+    public void dumpCriteriaArticle() {
+        final String tableName = "TOF_ARTICLE_CRITERIA";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_article_criteria";
+
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "article_id int(11),\n"
+                + "sort int(11),\n"
+                + "criteria_id int(11),\n"
+                + "value varchar(100),\n"
+                + "display int(11) \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes
+                = "ALTER TABLE " + mysqlTable + " ADD INDEX (article_id);\n"
+                + "ALTER TABLE " + mysqlTable + " ADD INDEX (criteria_id);\n"
+                + "ALTER TABLE " + mysqlTable + " ADD INDEX (sort);\n";
+
+        final String selectCriteriaArticle = "SELECT ACR_ART_ID, ACR_SORT, ACR_CRI_ID, ACR_VALUE, ACR_DISPLAY"
+                + " FROM " + tableName + " "
+                + "WHERE ACR_KV_DES_ID IS NULL";
+
+        //    "(SELECT ACR_ART_ID, ACR_SORT, ACR_CRI_ID, TEX_TEXT, ACR_DISPLAY" + 
+        //    " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " " +
+        //    "WHERE ACR_KV_DES_ID=DES_ID AND DES_TEX_ID=TEX_ID AND ACR_KV_DES_ID IS NOT NULL AND DES_LNG_ID=" + russianId + ")" +
+        //    "");             
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectCriteriaArticle)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
+                    
+
+
+    
     //##############################################
     //##############################################
     //##############################################
