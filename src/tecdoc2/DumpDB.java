@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -915,7 +917,12 @@ public void dumpSearchTree() {
         rsTransbase.beforeFirst();
         System.out.println(rowCount+" to be processed");
         
-        DumpFile df = DumpFile.dumpFileFactory(mysqlTable+".sql");
+        DumpFile df = null;
+        try {
+            df = new DumpFile(mysqlTable+".sql");
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        }
         //write intro
         String textToWrite = "-- MySQL dump 10.16  Distrib 10.1.13-MariaDB, for Linux (i686)\n" +
                     "--\n" +
@@ -1003,6 +1010,7 @@ public void dumpSearchTree() {
                                 }
                                 break;
                             case "VARCHAR":
+                            //case "CHAR":
                                 if (rsTransbase.getObject(i) == null) {
                                     sb.append("NULL");
                                 } else {

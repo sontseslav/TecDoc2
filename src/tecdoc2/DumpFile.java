@@ -20,7 +20,7 @@ public class DumpFile {
     //private boolean osClosed;
     private byte[] buffer;
     
-    private DumpFile(String filename) throws FileNotFoundException{
+    public DumpFile(String filename) throws FileNotFoundException{
         os = new FileOutputStream(filename);
     }
     

@@ -16,39 +16,39 @@ public class TexdocDump {
         // Cars
         //ddb.dumpManufacturersUA();//done
         //ddb.dumpManufacturersOther();//done
-        ddb.dumpModelsUA();//done
-        ddb.dumpTypesUA();//done
+        //ddb.dumpModelsUA();//done
+        //ddb.dumpTypesUA();//done
         
         //-----TO DO------
         
-        ddb.dumpTypesBody();
-        ddb.dumpTypesEngine();
-        ddb.dumpTypesFuel();
-        ddb.dumpTypesDrive();
-        ddb.dumpLinkTypeEngine();
-        ddb.dumpEngines();
+        //ddb.dumpTypesBody();//done
+        //ddb.dumpTypesEngine();//done
+        //ddb.dumpTypesFuel();//done
+        //ddb.dumpTypesDrive();//done
+        //ddb.dumpLinkTypeEngine();//done
+        //ddb.dumpEngines();//done
             
         // Articles
-        ddb.dumpArticlesUA();//done
-        ddb.dumpSuppliersUA();//done
-        ddb.dumpSearchTree();//done
-        ddb.dumpLinkGenericArticleSearchTree();//done
+        //ddb.dumpArticlesUA();//done
+        //ddb.dumpSuppliersUA();//done
+        //ddb.dumpSearchTree();//done
+        //ddb.dumpLinkGenericArticleSearchTree();//done
         
         //CHAR to VARCHAR!
         /*
-        ddb.dumpCriteria();//done - compare with dumpCriteriaArticle()!
+        ddb.dumpCriteria();//done
         */
         //ddb.dumpArticlesLookupUA();//done
         
         //-----TO DO------
         
-        ddb.dumpLinkTypeArticle();
-        ddb.dumpArticlesLink();
-        ddb.dumpGenericArticles();
-        ddb.dumpArticlesAttributes();//done
+        //ddb.dumpLinkTypeArticle();//done 105 mln
+        //ddb.dumpArticlesLink();//done
+        //ddb.dumpGenericArticles();//
+        //ddb.dumpArticlesAttributes();//done
         //check select statement precisely!
-        ddb.dumpCriteriaArticleIsNull();
-        ddb.dumpCriteriaArticleNotNull();
+        //ddb.dumpCriteriaArticleIsNull();//done
+        //ddb.dumpCriteriaArticleNotNull();//done
        
         //ddb.exportPictures();
         
