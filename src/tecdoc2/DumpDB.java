@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -260,7 +261,7 @@ public class DumpDB {
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
                 + "id int(11), \n"
                 + "article_nr VARCHAR(80), \n"
-                + "supplier_id int(11), \n"
+                + "supplier_id SMALLINT, \n" /*int(11)*/
                 + "description VARCHAR(1024), \n"
                 + "PRIMARY KEY (id) \n"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
@@ -272,7 +273,7 @@ public class DumpDB {
                     + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " "
                     + " WHERE ART_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 AND "
                     + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND "
-                    + " ART_COMPLETE_DES_ID = DES_ID";
+                    + " ART_COMPLETE_DES_ID = DES_ID ORDER BY ART_ID";
         
         System.out.println("Start dumping " + mysqlTable + " table");
 
@@ -299,8 +300,8 @@ public class DumpDB {
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
                 + "id int(11), \n"
                 + "brand VARCHAR(100), \n"
-                + "alias VARCHAR(100), \n"
-                + "supplier_nr int(11), \n"
+                + "alias VARCHAR(100), \n" /*same as previous*/
+                + "supplier_nr SMALLINT, \n" /*int(11)*/
                 + "PRIMARY KEY (id) \n"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
 
@@ -338,8 +339,8 @@ public void dumpSearchTree() {
                 "parent_id INT(11), \n" +
                 "type SMALLINT(2), \n" +
                 "level SMALLINT(2), \n" +
+                "sort INT(11), \n" + /*repaired*/
                 "node_number INT(11), \n" +
-                "sort INT(11), \n" +
                 "text VARCHAR(255), \n" +
                 "PRIMARY KEY (id) \n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
@@ -421,14 +422,14 @@ public void dumpSearchTree() {
                 + "unit int(11),\n"
                 + "type varchar(6),\n"
                 + "is_interval int(5),\n"
-                + "successor int(11) \n"
+                + "successor SMALLINT \n" /*int(11)*/
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
 
         final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (id);\n";
 
         final String selectCriteria = "SELECT CRI_ID, TEX_TEXT, CRI_UNIT_DES_ID, CRI_TYPE, CRI_IS_INTERVAL, CRI_SUCCESSOR"
                 + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
-                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND CRI_SHORT_DES_ID = DES_ID";
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND CRI_SHORT_DES_ID = DES_ID ORDER BY CRI_ID";
 
         System.out.println("Start dumping " + mysqlTable + " table");
 
@@ -456,15 +457,17 @@ public void dumpSearchTree() {
 
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
                 + "article_id int(11),\n"
-                + "sort int(11),\n"
+                + "sort smallint,\n" /*int(11)*/
                 + "description TEXT\n" /*what the FUCK???*/
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
 
         final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (article_id);\n";
         
         final String selectArticleAttributes = "SELECT AIN_ART_ID, AIN_SORT, TMT_TEXT"
-                    + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
-                    + " TMO_LNG_ID = " + RUSSIAN_ID + " AND TMO_TMT_ID = TMT_ID AND AIN_TMO_ID = TMO_ID";
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
+                + " TMO_LNG_ID = " + RUSSIAN_ID + " AND TMO_TMT_ID = TMT_ID "
+                + "AND AIN_TMO_ID = TMO_ID "
+                + "ORDER BY AIN_ART_ID";
         
         System.out.println("Start dumping " + mysqlTable + " table");
 
@@ -498,7 +501,8 @@ public void dumpSearchTree() {
                 + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
                 + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
                 + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
-                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_BODY_DES_ID = DES_ID";
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND "
+                + "TYP_KV_BODY_DES_ID = DES_ID ORDER BY TYP_ID";
 
         final String sqlIndexes = "\n";
 
@@ -534,7 +538,8 @@ public void dumpSearchTree() {
                 + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
                 + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
                 + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
-                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_ENGINE_DES_ID = DES_ID";
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND "
+                + "TYP_KV_ENGINE_DES_ID = DES_ID ORDER BY TYP_ID";
 
         final String sqlIndexes = "\n";
 
@@ -570,7 +575,8 @@ public void dumpSearchTree() {
                 + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
                 + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
                 + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
-                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_FUEL_DES_ID = DES_ID";
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND "
+                + "TYP_KV_FUEL_DES_ID = DES_ID ORDER BY TYP_ID";
 
         final String sqlIndexes = "\n";
 
@@ -606,7 +612,8 @@ public void dumpSearchTree() {
                 + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " WHERE"
                 + " (TYP_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1 OR"
                 + " TYP_LA_CTM SUBRANGE (" + UKRAINE_CODE + " CAST INTEGER) = 1) AND"
-                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND TYP_KV_DRIVE_DES_ID = DES_ID";
+                + " DES_LNG_ID = " + RUSSIAN_ID + " AND DES_TEX_ID = TEX_ID AND "
+                + "TYP_KV_DRIVE_DES_ID = DES_ID ORDER BY TYP_ID";
 
         final String sqlIndexes = "\n";
 
@@ -628,7 +635,7 @@ public void dumpSearchTree() {
     }
         
     public void dumpLinkTypeEngine() {
-        final String tableName = "tof_link_typ_eng";//???
+        final String tableName = "TOF_LINK_TYP_ENG";
         final String mysqlTable = "tof_link_type_engine";
 
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
@@ -639,7 +646,7 @@ public void dumpSearchTree() {
         final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (type_id);\n"
                 + "ALTER TABLE " + mysqlTable + " ADD INDEX (engine_id);\n";
 
-        final String selectLinkTypeEngine = "SELECT DISTINCT lte_typ_id, lte_eng_id "
+        final String selectLinkTypeEngine = "SELECT DISTINCT LTE_TYP_ID, LTE_ENG_ID "
                 + " FROM " + tableName;
 
         System.out.println("Start dumping " + mysqlTable + " table");
@@ -661,8 +668,8 @@ public void dumpSearchTree() {
                 
     public void dumpEngines() {
         final String tableName = "TOF_ENGINES";
-        final String tableCountry = "TOF_DESIGNATIONS";
-        final String tableDescriptions = "TOF_DES_TEXTS";
+        //final String tableCountry = "TOF_DESIGNATIONS";
+        //final String tableDescriptions = "TOF_DES_TEXTS";
         final String mysqlTable = "tof_engines";
 
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
@@ -702,7 +709,7 @@ public void dumpSearchTree() {
                 + "type_id int(11), \n"
                 + "article_link_id int(11), \n"
                 + "generic_article_id int(11), \n"
-                + "supplier_id int(11) \n"
+                + "supplier_id  smallint\n" /*int(11)*/
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n"; //default value  ENGINE=MYISAM
 
         final String sqlIndexes
@@ -798,18 +805,19 @@ public void dumpSearchTree() {
 
     }
         
-    public void dumpCriteriaArticle() {
+    /**
+     WHERE ACR_KV_DES_ID IS NULL
+     */
+    public void dumpCriteriaArticleIsNull() {
         final String tableName = "TOF_ARTICLE_CRITERIA";
-        final String tableCountry = "TOF_DESIGNATIONS";
-        final String tableDescriptions = "TOF_DES_TEXTS";
-        final String mysqlTable = "tof_article_criteria";
+        final String mysqlTable = "tof_article_criteria_is_null";
 
         final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
                 + "article_id int(11),\n"
-                + "sort int(11),\n"
-                + "criteria_id int(11),\n"
+                + "sort tinyint,\n"
+                + "criteria_id smallint,\n"
                 + "value varchar(100),\n"
-                + "display int(11) \n"
+                + "display tinyint \n"
                 + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
 
         final String sqlIndexes
@@ -819,12 +827,8 @@ public void dumpSearchTree() {
 
         final String selectCriteriaArticle = "SELECT ACR_ART_ID, ACR_SORT, ACR_CRI_ID, ACR_VALUE, ACR_DISPLAY"
                 + " FROM " + tableName + " "
-                + "WHERE ACR_KV_DES_ID IS NULL";
-
-        //    "(SELECT ACR_ART_ID, ACR_SORT, ACR_CRI_ID, TEX_TEXT, ACR_DISPLAY" + 
-        //    " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " " +
-        //    "WHERE ACR_KV_DES_ID=DES_ID AND DES_TEX_ID=TEX_ID AND ACR_KV_DES_ID IS NOT NULL AND DES_LNG_ID=" + russianId + ")" +
-        //    "");             
+                + "WHERE ACR_KV_DES_ID IS NULL ORDER BY ACR_ART_ID";
+          
         System.out.println("Start dumping " + mysqlTable + " table");
 
         long time = System.currentTimeMillis();
@@ -842,7 +846,48 @@ public void dumpSearchTree() {
 
     }
                     
+    /**
+     WHERE ACR_KV_DES_ID IS NOT NULL
+     */
+    public void dumpCriteriaArticleNotNull() {
+        final String tableName = "TOF_ARTICLE_CRITERIA";
+        final String tableCountry = "TOF_DESIGNATIONS";
+        final String tableDescriptions = "TOF_DES_TEXTS";
+        final String mysqlTable = "tof_article_criteria_not_null";
 
+        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+                + "article_id int(11),\n"
+                + "sort tinyint,\n"
+                + "criteria_id smallint,\n"
+                + "description varchar(100),\n"
+                + "display tinyint \n"
+                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+
+        final String sqlIndexes
+                = "ALTER TABLE " + mysqlTable + " ADD INDEX (article_id);\n"
+                + "ALTER TABLE " + mysqlTable + " ADD INDEX (criteria_id);\n"
+                + "ALTER TABLE " + mysqlTable + " ADD INDEX (sort);\n";
+
+        final String selectCriteriaArticle = "SELECT ACR_ART_ID, ACR_SORT, ACR_CRI_ID, TEX_TEXT, ACR_DISPLAY"
+                + " FROM " + tableName + ", " + tableCountry + ", " + tableDescriptions + " "
+                + "WHERE ACR_KV_DES_ID=DES_ID AND DES_TEX_ID=TEX_ID AND ACR_KV_DES_ID IS NOT NULL AND DES_LNG_ID=" + RUSSIAN_ID + "";
+
+        System.out.println("Start dumping " + mysqlTable + " table");
+
+        long time = System.currentTimeMillis();
+        try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = st.executeQuery(selectCriteriaArticle)) {
+            ResultSetMetaData metaResult = result.getMetaData();
+            int numberOfColumns = metaResult.getColumnCount();
+            makeDump(result, numberOfColumns, mysqlTable, sqlCreateTable, sqlIndexes);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Time elapsed: " + countTime(time)
+                + "\n----------------------------");
+
+    }
 
     
     //##############################################
@@ -977,6 +1022,20 @@ public void dumpSearchTree() {
                                     sb.append("NULL");
                                 } else {
                                     sb.append((float)rsTransbase.getFloat(i));
+                                }
+                                if(i == columnCount){
+                                    sb.append(")");
+                                }else{
+                                    sb.append(",");
+                                }
+                                break;
+                            case "BLOB":
+                                if (rsTransbase.getObject(i) == null) {
+                                    sb.append("NULL");
+                                } else {
+                                    Blob blob = rsTransbase.getBlob(i);
+                                    byte[] bdata = blob.getBytes(1, (int)blob.length());
+                                    sb.append(new String(bdata));
                                 }
                                 if(i == columnCount){
                                     sb.append(")");

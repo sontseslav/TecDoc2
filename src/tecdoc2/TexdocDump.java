@@ -33,7 +33,11 @@ public class TexdocDump {
         ddb.dumpSuppliersUA();//done
         ddb.dumpSearchTree();//done
         ddb.dumpLinkGenericArticleSearchTree();//done
+        
+        //CHAR to VARCHAR!
+        /*
         ddb.dumpCriteria();//done - compare with dumpCriteriaArticle()!
+        */
         //ddb.dumpArticlesLookupUA();//done
         
         //-----TO DO------
@@ -43,7 +47,8 @@ public class TexdocDump {
         ddb.dumpGenericArticles();
         ddb.dumpArticlesAttributes();//done
         //check select statement precisely!
-        ddb.dumpCriteriaArticle();    
+        ddb.dumpCriteriaArticleIsNull();
+        ddb.dumpCriteriaArticleNotNull();
        
         //ddb.exportPictures();
         
