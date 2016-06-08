@@ -45,7 +45,7 @@ public class TexdocDump {
         //ddb.dumpLinkTypeArticle();//done 105 mln
         //ddb.dumpArticlesLink();//done
         //ddb.dumpGenericArticles();//
-        //ddb.dumpArticlesAttributes();//done
+        ddb.dumpArticlesAttributes();//done
         //check select statement precisely!
         //ddb.dumpCriteriaArticleIsNull();//done
         //ddb.dumpCriteriaArticleNotNull();//done

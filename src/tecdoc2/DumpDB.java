@@ -92,13 +92,19 @@ public class DumpDB {
     public void dumpArticlesLookupUA(){
         final String tableName = "TOF_ART_LOOKUP";
         final String mysqlTable = "tof_articles_lookup_new_ua";
-        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n" +
+        final String setCompressionVar = "SET GLOBAL innodb_file_per_table=1;\n"
+                + "SET GLOBAL innodb_file_format=Barracuda;\n";
+        final String initCompression = "ROW_FORMAT=COMPRESSED\n"
+                + "KEY_BLOCK_SIZE=8\n";
+        final String sqlCreateTable = setCompressionVar+
+                " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n" +
                 "article_id int(11) NOT NULL,\n" +
                 "search varchar(105) DEFAULT NULL,\n" +
                 "display varchar(105) DEFAULT NULL,\n" +
                 "article_type smallint(11) DEFAULT NULL,\n" +
                 "brand_id int(11) DEFAULT NULL\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
+                ") "+initCompression
+                + " ENGINE=InnoDB DEFAULT CHARSET=utf8;\n";
         final String sqlIndexes = "ALTER TABLE " + mysqlTable + " ADD INDEX (article_id);\n" +
                 "ALTER TABLE " + mysqlTable + " ADD INDEX (search);\n" +
                 "ALTER TABLE " + mysqlTable + " ADD INDEX (article_type);\n" +
@@ -706,13 +712,19 @@ public void dumpSearchTree() {
     public void dumpLinkTypeArticle() {
         final String tableName = "TOF_LINK_LA_TYP";
         final String mysqlTable = "tof_link_type_article";
-
-        final String sqlCreateTable = " CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
+        final String setCompressionVar = "SET GLOBAL innodb_file_per_table=1;\n"
+                + "SET GLOBAL innodb_file_format=Barracuda;\n";
+        final String initCompression = "ROW_FORMAT=COMPRESSED\n"
+                + "KEY_BLOCK_SIZE=8\n";
+        
+        final String sqlCreateTable = setCompressionVar
+                +" CREATE TABLE IF NOT EXISTS " + mysqlTable + " (\n"
                 + "type_id int(11), \n"
                 + "article_link_id int(11), \n"
                 + "generic_article_id int(11), \n"
                 + "supplier_id  smallint\n" /*int(11)*/
-                + ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n"; //default value  ENGINE=MYISAM
+                + ") " + initCompression
+                + " ENGINE=InnoDB DEFAULT CHARSET=utf8;\n"; //default value  ENGINE=MYISAM
 
         final String sqlIndexes
                 = "ALTER TABLE " + mysqlTable + " ADD INDEX (type_id);\n"
@@ -1043,7 +1055,10 @@ public void dumpSearchTree() {
                                 } else {
                                     Blob blob = rsTransbase.getBlob(i);
                                     byte[] bdata = blob.getBytes(1, (int)blob.length());
-                                    sb.append(new String(bdata));
+                                    String b2s = new String(bdata);
+                                    b2s = b2s.replace("\u0000", "");
+                                    b2s = b2s.replace(Character.toString((char)10), "");
+                                    sb.append(b2s);
                                 }
                                 if(i == columnCount){
                                     sb.append(")");
@@ -1063,9 +1078,9 @@ public void dumpSearchTree() {
                     }else{
                         sb.append(",");
                     }
-                    if(row % 100000 == 0){System.out.printf("%d rows added : %.2f %n",row,(((double)row)/rowCount*100));}
+                    if(row % 100000 == 0){System.out.printf("%d rows added : %.2f%% %n",row,(((double)row)/rowCount*100));}
                 }
-                System.out.printf("%d rows added : %.2f %n",row,(((double)row)/rowCount*100));
+                System.out.printf("%d rows added : %.2f%% %n",row,(((double)row)/rowCount*100));
                 if(sb.length() == insert.length()){
                     sb.replace(0, sb.length()-1, "\n");
                 }else{
