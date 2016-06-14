@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -19,7 +20,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +46,8 @@ public class DumpDB {
     private static final int UKRAINE_CODE = 210;
     private static final int RUSSIAN_ID = 16;
     private Connection connTransbase = null;
+    
+    private static final Map<Byte, Character> DICT = new Hashtable<>();
     
     public DumpDB(){
         try {
@@ -480,6 +485,7 @@ public void dumpSearchTree() {
         System.out.println("Start dumping " + mysqlTable + " table");
 
         long time = System.currentTimeMillis();
+        initDict();
         try (Statement st = connTransbase.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                 ResultSet.CONCUR_READ_ONLY);
                 ResultSet result = st.executeQuery(selectArticleAttributes)) {
@@ -1054,11 +1060,28 @@ public void dumpSearchTree() {
                                     sb.append("NULL");
                                 } else {
                                     Blob blob = rsTransbase.getBlob(i);
-                                    byte[] bdata = blob.getBytes(1, (int)blob.length());
-                                    String b2s = new String(bdata);
-                                    b2s = b2s.replace("\u0000", "");
-                                    b2s = b2s.replace(Character.toString((char)10), "");
-                                    sb.append(b2s);
+                                    byte[] bdata = blob.getBytes(1, (int) blob.length());
+                                    char[] ch = new char[bdata.length];
+                                    for (int n = 0, m = bdata.length; n < m; n++) {
+                                        ch[n] = (char) bdata[n];
+                                        if (bdata[n] == 0x04) {
+                                            //System.out.println(bdata[n - 1]);
+                                            if(!DICT.containsKey(bdata[n - 1])){
+                                                ch[n-1] = 0x00;
+                                                ch[n] = 0x00;
+                                            } else {
+                                                //System.out.println(DICT.get(bdata[n - 1]));
+                                                ch[n - 1] = DICT.get(bdata[n - 1]);
+                                                ch[n] = 0x00;
+                                            }
+                                        }
+                                    }
+                                    String s = new String(ch);
+                                    s = s.replace("\u0000", "");
+                                    s = s.replace(Character.toString((char)10), "");
+                                    s = s.replace("\"", "");
+                                    s = "\""+s+"\"";
+                                    sb.append(s);
                                 }
                                 if(i == columnCount){
                                     sb.append(")");
@@ -1121,5 +1144,89 @@ public void dumpSearchTree() {
         SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         return formatter.format(date);
+    }
+    /**
+     * accessory method
+     * Windows-1251 cirilic dictionary
+     */
+    private void initDict(){
+        DICT.put((byte)0x01, 'Ё');
+        DICT.put((byte)0x04, 'Є');
+        DICT.put((byte)0x05, 'S');
+        DICT.put((byte)0x55, 's');
+        DICT.put((byte)0x08, 'J');
+        DICT.put((byte)0x58, 'j');
+        DICT.put((byte)0x07, 'Ї');
+        DICT.put((byte)0x06, 'І');
+        DICT.put((byte)0x56, 'і');
+        DICT.put((byte)0x51, 'ё');
+        DICT.put((byte)0x54, 'є');
+        DICT.put((byte)0x57, 'ї');
+        
+        DICT.put((byte)0x10, 'А');
+        DICT.put((byte)0x11, 'Б');
+        DICT.put((byte)0x12, 'В');
+        DICT.put((byte)0x13, 'Г');
+        DICT.put((byte)0x14, 'Д');
+        DICT.put((byte)0x15, 'Е');
+        DICT.put((byte)0x16, 'Ж');
+        DICT.put((byte)0x17, 'З');
+        DICT.put((byte)0x18, 'И');
+        DICT.put((byte)0x19, 'Й');
+        DICT.put((byte)0x1A, 'К');
+        DICT.put((byte)0x1B, 'Л');
+        DICT.put((byte)0x1C, 'М');
+        DICT.put((byte)0x1D, 'Н');
+        DICT.put((byte)0x1E, 'О');
+        DICT.put((byte)0x1F, 'П');
+        DICT.put((byte)0x20, 'Р');
+        DICT.put((byte)0x21, 'С');
+        DICT.put((byte)0x22, 'Т');
+        DICT.put((byte)0x23, 'У');
+        DICT.put((byte)0x24, 'Ф');
+        DICT.put((byte)0x25, 'Х');
+        DICT.put((byte)0x26, 'Ц');
+        DICT.put((byte)0x27, 'Ч');
+        DICT.put((byte)0x28, 'Ш');
+        DICT.put((byte)0x29, 'Щ');
+        DICT.put((byte)0x2A, 'Ъ');
+        DICT.put((byte)0x2B, 'Ы');
+        DICT.put((byte)0x2C, 'Ь');
+        DICT.put((byte)0x2D, 'Э');
+        DICT.put((byte)0x2E, 'Ю');
+        DICT.put((byte)0x2F, 'Я');
+        
+        DICT.put((byte)0x30, 'а');
+        DICT.put((byte)0x31, 'б');
+        DICT.put((byte)0x32, 'в');
+        DICT.put((byte)0x33, 'г');
+        DICT.put((byte)0x34, 'д');
+        DICT.put((byte)0x35, 'е');
+        DICT.put((byte)0x36, 'ж');
+        DICT.put((byte)0x37, 'з');
+        DICT.put((byte)0x38, 'и');
+        DICT.put((byte)0x39, 'й');
+        DICT.put((byte)0x3A, 'к');
+        DICT.put((byte)0x3B, 'л');
+        DICT.put((byte)0x3C, 'м');
+        DICT.put((byte)0x3D, 'н');
+        DICT.put((byte)0x3E, 'о');
+        DICT.put((byte)0x3F, 'п');
+        DICT.put((byte)0x40, 'р');
+        DICT.put((byte)0x41, 'с');
+        DICT.put((byte)0x42, 'т');
+        DICT.put((byte)0x43, 'у');
+        DICT.put((byte)0x44, 'ф');
+        DICT.put((byte)0x45, 'х');
+        DICT.put((byte)0x46, 'ц');
+        DICT.put((byte)0x47, 'ч');
+        DICT.put((byte)0x48, 'ш');
+        DICT.put((byte)0x49, 'щ');
+        DICT.put((byte)0x4A, 'ъ');
+        DICT.put((byte)0x4B, 'ы');
+        DICT.put((byte)0x4C, 'ь');
+        DICT.put((byte)0x4D, 'э');
+        DICT.put((byte)0x4E, 'ю');
+        DICT.put((byte)0x4F, 'я');
     }
 }
